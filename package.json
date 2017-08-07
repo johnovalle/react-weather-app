@@ -5,7 +5,9 @@
   "main": "webpack.config.js",
   "scripts": {
     "dev": "webpack-dev-server --content-base src --inline --hot",
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack --optimize-minimize",
+    "build-dev": "webpack"
   },
   "author": "",
   "license": "ISC",
