@@ -1,6 +1,8 @@
 import React from 'react';
 import Request from 'superagent';
 
+import City from './City';
+
 const API_KEY = 'ec43fc60938ed12b00c4a3cbfba0a746';
 
 export default class App extends React.Component {
@@ -8,6 +10,7 @@ export default class App extends React.Component {
         super();
         this.state = {
             currentCity: null,
+            lastSearch: "none",
             previousSearches: {
                 //list of cities which gets saved into localStorage on search
             },
@@ -33,26 +36,32 @@ export default class App extends React.Component {
         }
         
     }
-    getWeather(citySearched){
-        var url = `https://api.openweathermap.org/data/2.5/weather?q=${citySearched}&units=imperial&APPID=${API_KEY}`;
-	    Request.get(url).then((response) => {
-	        console.log(response);
-	        let weatherRes = response.body;
-	        let currentCity = {
-	            name: weatherRes.name,
-	            timeRecieved: Date.now(),
-	            temp: weatherRes.main.temp,
-	            tempHigh: weatherRes.main.temp_max,
-	            tempLow: weatherRes.main.temp_min,
-	            condition: weatherRes.weather[0].main,
-	            conditionIconUrl: this.iconToUrl(weatherRes.weather[0].icon),
-	            conditionDesc: weatherRes.weather[0].description
-	        };
-	        let previousSearches = Object.assign({}, this.state.previousSearches);
-            previousSearches.lastCityKey = weatherRes.name;
-            previousSearches[weatherRes.name] = currentCity;
-	        this.setState({currentCity, previousSearches});
-	        localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
+    getWeather(cityQuery){
+        this.setState({lastSearch: cityQuery});
+        var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=imperial&APPID=${API_KEY}`;
+	    Request.get(url).then((success, failure) => {
+	        console.log(success);
+	        if(success && success.body){
+	            let weatherRes = success.body;
+    	        let currentCity = {
+    	            name: weatherRes.name,
+    	            timeRecieved: Date.now(),
+    	            temp: weatherRes.main.temp,
+    	            tempHigh: weatherRes.main.temp_max,
+    	            tempLow: weatherRes.main.temp_min,
+    	            condition: weatherRes.weather[0].main,
+    	            conditionIconUrl: this.iconToUrl(weatherRes.weather[0].icon),
+    	            conditionDesc: weatherRes.weather[0].description
+    	        };
+    	        let previousSearches = Object.assign({}, this.state.previousSearches);
+                previousSearches.lastCityKey = weatherRes.name;
+                previousSearches[weatherRes.name] = currentCity;
+    	        this.setState({currentCity, previousSearches});
+    	        localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
+	        }else{
+	            console.error('failed to get data for: ', cityQuery);
+	        }
+	        
 	    });
     }
     
@@ -60,22 +69,7 @@ export default class App extends React.Component {
         return `https://openweathermap.org/img/w/${icon}.png`;
     }
     
-    buildCurrentCity(){
-        let currentCity = this.state.currentCity;
-        if(this.state.currentCity){
-            return(
-                <div>
-                    <div>{this.state.currentCity.name}</div>
-                    <div>{this.state.currentCity.temp}</div>
-                    <div>{this.state.currentCity.condition}</div>
-                    <div>{this.state.currentCity.conditionDesc}</div>
-                    <img src={this.state.currentCity.conditionIconUrl}/>
-                </div>
-            );
-        }else{
-            return (<h3>no data available</h3>);
-        }
-    }
+    
     render(){
         //components need
         //for now just the search (input and sumbit)
@@ -83,7 +77,7 @@ export default class App extends React.Component {
         return(
             <div>
                 <h1>Weather App</h1>
-                {this.buildCurrentCity()}
+                <City currentCity={this.state.currentCity} lastSearch={this.state.lastSearch} />
             </div>
         );
     }
