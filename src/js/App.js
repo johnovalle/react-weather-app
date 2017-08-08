@@ -17,14 +17,14 @@ export default class App extends React.Component {
     componentWillMount(){
         //get state from localStorage if available
         let previousSearches = JSON.parse(localStorage.getItem('previousSearches')) || {};
-        this.setState({previousSearches});
-        let lastCityKey = this.state.previousSearches.lastCityKey;
         
+        this.setState({previousSearches});
+        let lastCityKey = previousSearches.lastCityKey;
         //state should either show the weather for the last search
         if(lastCityKey){
             //check when the weather was last recieved if time is greater than X
             //get it again
-            this.setState({currentCity: this.state.previousSearches[lastCityKey] });
+            this.setState({currentCity: previousSearches[lastCityKey] });
         }
         //or should show the weather at the users current gps if possible
         //failing that a call should be made to get the results for a default city
@@ -52,16 +52,17 @@ export default class App extends React.Component {
             previousSearches.lastCityKey = weatherRes.name;
             previousSearches[weatherRes.name] = currentCity;
 	        this.setState({currentCity, previousSearches});
+	        localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
 	    });
     }
     
     iconToUrl(icon){
-        return `https://openweathermap.org/img/w/${icon}.png`
+        return `https://openweathermap.org/img/w/${icon}.png`;
     }
     
-    buildCity(){
+    buildCurrentCity(){
+        let currentCity = this.state.currentCity;
         if(this.state.currentCity){
-            console.log(this.state.currentCity);
             return(
                 <div>
                     <div>{this.state.currentCity.name}</div>
@@ -79,11 +80,10 @@ export default class App extends React.Component {
         //components need
         //for now just the search (input and sumbit)
         //and display for current city
-        let currentCity = this.state.currentCity;
         return(
             <div>
                 <h1>Weather App</h1>
-                {this.buildCity()}
+                {this.buildCurrentCity()}
             </div>
         );
     }
