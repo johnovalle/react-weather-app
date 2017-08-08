@@ -11,11 +11,14 @@ export default class App extends React.Component {
         this.state = {
             currentCity: null,
             lastSearch: "none",
+            currentSearch: "",
             previousSearches: {
                 //list of cities which gets saved into localStorage on search
             },
             defaultCity: "Tokyo"
         };
+        this.changeHandler = this.changeHandler.bind(this);
+        this.clickHandler = this.clickHandler.bind(this);
     }
     componentWillMount(){
         //get state from localStorage if available
@@ -39,6 +42,7 @@ export default class App extends React.Component {
     getWeather(cityQuery){
         this.setState({lastSearch: cityQuery});
         var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=imperial&APPID=${API_KEY}`;
+        console.log(url);
 	    Request.get(url).then((success, failure) => {
 	        console.log(success);
 	        if(success && success.body){
@@ -68,16 +72,27 @@ export default class App extends React.Component {
     iconToUrl(icon){
         return `https://openweathermap.org/img/w/${icon}.png`;
     }
-    
+    changeHandler(event){
+        let val = event.target.value;
+        this.setState({currentSearch: val});
+    }
+    clickHandler(event){
+        this.getWeather(this.state.currentSearch);
+    }
     
     render(){
         //components need
         //for now just the search (input and sumbit)
-        //and display for current city
         return(
             <div>
                 <h1>Weather App</h1>
                 <City currentCity={this.state.currentCity} lastSearch={this.state.lastSearch} />
+                
+                <input 
+                    placeholder="Enter a city to see the weather" 
+                    value={this.state.currentSearch} 
+                    onChange={this.changeHandler}
+                /> <button onClick={this.clickHandler}>Get the weather</button>
             </div>
         );
     }
