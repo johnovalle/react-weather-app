@@ -30,7 +30,13 @@ export default class App extends React.Component {
         if(lastCityKey){
             //check when the weather was last recieved if time is greater than X
             //get it again
-            this.setState({currentCity: previousSearches[lastCityKey] });
+            if(this.isCacheFresh(previousSearches[lastCityKey])){
+                console.log("local data is fresh");
+                this.setState({currentCity: previousSearches[lastCityKey] });
+            }else{
+                console.log("local data is stale");
+                this.getWeather(lastCityKey);
+            }
         }
         //or should show the weather at the users current gps if possible
         //failing that a call should be made to get the results for a default city
@@ -39,34 +45,61 @@ export default class App extends React.Component {
         }
         
     }
+    //take advantage of local storage by not hitting server 
+    //if it's been less than 1 hour since last search for city
+    isCacheFresh(cachedSearch){
+        if(cachedSearch && cachedSearch.timeRecieved){
+            return this.checkTime(cachedSearch.timeRecieved);
+        }else{
+            return false;
+        }
+    }
+    checkTime(time){
+        const ONE_HOUR = 60 * 60 * 1000;
+        let delta = Date.now() - time;
+        return delta < ONE_HOUR;
+    }
+    
     getWeather(cityQuery){
         this.setState({lastSearch: cityQuery});
-        var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=imperial&APPID=${API_KEY}`;
-        console.log(url);
-	    Request.get(url).then((success, failure) => {
-	        console.log(success);
-	        if(success && success.body){
-	            let weatherRes = success.body;
-    	        let currentCity = {
-    	            name: weatherRes.name,
-    	            timeRecieved: Date.now(),
-    	            temp: weatherRes.main.temp,
-    	            tempHigh: weatherRes.main.temp_max,
-    	            tempLow: weatherRes.main.temp_min,
-    	            condition: weatherRes.weather[0].main,
-    	            conditionIconUrl: this.iconToUrl(weatherRes.weather[0].icon),
-    	            conditionDesc: weatherRes.weather[0].description
-    	        };
-    	        let previousSearches = Object.assign({}, this.state.previousSearches);
-                previousSearches.lastCityKey = weatherRes.name;
-                previousSearches[weatherRes.name] = currentCity;
-    	        this.setState({currentCity, previousSearches});
-    	        localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
-	        }else{
-	            console.error('failed to get data for: ', cityQuery);
-	        }
-	        
-	    });
+        let cachedSearch = this.state.previousSearches[cityQuery];
+        //if there is no previous search for a city or the search is stale
+        if(this.isCacheFresh(cachedSearch)){ //less than one hour since last search
+            console.log("already have", this.state.previousSearches, cityQuery);
+            let previousSearches = Object.assign({}, this.state.previousSearches);
+            previousSearches.lastCityKey = cityQuery;
+            this.setState({currentCity: this.state.previousSearches[cityQuery], previousSearches });
+            localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
+        }
+        else{
+            console.log("new search");
+            var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=imperial&APPID=${API_KEY}`;
+    	    Request.get(url).then((success, failure) => {
+    	        console.log(success);
+    	        if(success && success.body){
+    	            let weatherRes = success.body;
+        	        let currentCity = {
+        	            name: weatherRes.name,
+        	            timeRecieved: Date.now(),
+        	            temp: weatherRes.main.temp,
+        	            tempHigh: weatherRes.main.temp_max,
+        	            tempLow: weatherRes.main.temp_min,
+        	            condition: weatherRes.weather[0].main,
+        	            conditionIconUrl: this.iconToUrl(weatherRes.weather[0].icon),
+        	            conditionDesc: weatherRes.weather[0].description
+        	        };
+        	        let previousSearches = Object.assign({}, this.state.previousSearches);
+                    previousSearches.lastCityKey = weatherRes.name;
+                    previousSearches[weatherRes.name] = currentCity;
+        	        this.setState({currentCity, previousSearches});
+        	        localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
+    	        }else{
+    	            console.error('failed to get data for: ', cityQuery);
+    	        }
+    	        
+    	    });
+        }
+        
     }
     
     iconToUrl(icon){
