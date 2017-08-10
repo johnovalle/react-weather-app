@@ -2,8 +2,10 @@ import React from 'react';
 import Request from 'superagent';
 
 import City from './City';
+import Search from './Search';
 
 const API_KEY = 'ec43fc60938ed12b00c4a3cbfba0a746';
+const TIME_KEY = 'AIzaSyACqnEUfeWGi5rgZ9qg3RObNRtNJnNCHeo';
 
 export default class App extends React.Component {
     constructor(){
@@ -17,8 +19,8 @@ export default class App extends React.Component {
             },
             defaultCity: "Tokyo"
         };
-        this.changeHandler = this.changeHandler.bind(this);
-        this.clickHandler = this.clickHandler.bind(this);
+        this.updateSearch = this.updateSearch.bind(this);
+        this.submitSearch = this.submitSearch.bind(this);
     }
     componentWillMount(){
         //get state from localStorage if available
@@ -38,7 +40,6 @@ export default class App extends React.Component {
                 this.getWeather(lastCityKey);
             }
         }
-        //or should show the weather at the users current gps if possible
         //failing that a call should be made to get the results for a default city
         else{
             this.getWeather(this.state.defaultCity);
@@ -106,11 +107,11 @@ export default class App extends React.Component {
     iconToUrl(icon){
         return `https://openweathermap.org/img/w/${icon}.png`;
     }
-    changeHandler(event){
+    updateSearch(event){
         let val = event.target.value;
         this.setState({currentSearch: val});
     }
-    clickHandler(event){
+    submitSearch(event){
         this.getWeather(this.state.currentSearch);
     }
     
@@ -120,13 +121,12 @@ export default class App extends React.Component {
         return(
             <div>
                 <h1>Weather App</h1>
-                <City currentCity={this.state.currentCity} lastSearch={this.state.lastSearch} />
+                <City currentCity={this.state.currentCity} 
+                        lastSearch={this.state.lastSearch} />
                 
-                <input 
-                    placeholder="Enter a city to see the weather" 
-                    value={this.state.currentSearch} 
-                    onChange={this.changeHandler}
-                /> <button onClick={this.clickHandler}>Get the weather</button>
+                <Search updateSearch={this.updateSearch} 
+                        submitSearch={this.submitSearch} 
+                        currentSearch={this.state.currentSearch}/>
             </div>
         );
     }
