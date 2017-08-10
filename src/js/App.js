@@ -119,8 +119,8 @@ export default class App extends React.Component {
         //components need
         //for now just the search (input and sumbit)
         return(
-            <div>
-                <h1>Weather App</h1>
+            <div className="row wrapper">
+                <h1 className="col-xs-12 col-md-6 col-md-offset-3">Weather App</h1>
                 <City currentCity={this.state.currentCity} 
                         lastSearch={this.state.lastSearch} />
                 

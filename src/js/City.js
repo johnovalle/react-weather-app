@@ -5,12 +5,13 @@ export default class City extends React.Component {
         let currentCity = this.props.currentCity;
         if(currentCity){
             return(
-                <div>
-                    <div>{currentCity.name}</div>
-                    <div>{currentCity.temp}</div>
-                    <div>{currentCity.condition}</div>
-                    <div>{currentCity.conditionDesc}</div>
-                    <img src={currentCity.conditionIconUrl}/>
+                <div className="col-xs-12 col-md-6 col-md-offset-3 cityDisplay">
+                    <div className="cityName">{currentCity.name}</div>
+                    <img className="weatherIcon" src={currentCity.conditionIconUrl}/>
+                    <div className="currentTemp">Current Tempurature:<br/> <span className="degrees">{currentCity.temp}&deg;F</span></div>
+                    <div className="weatherCondition">Weather Condition: {currentCity.condition}</div>
+                    <div className="weatherDescription">Description: {currentCity.conditionDesc}</div>
+                    
                 </div>
             );
         }else{
