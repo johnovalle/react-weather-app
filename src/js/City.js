@@ -22,3 +22,8 @@ export default class City extends React.Component {
         return this.buildCurrentCity();
     }
 }
+
+City.propTypes = {  
+  currentCity: React.PropTypes.object,
+  lastSearch: React.PropTypes.string.isRequired
+};

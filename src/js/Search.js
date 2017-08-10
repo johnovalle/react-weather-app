@@ -17,3 +17,9 @@ export default class Search extends React.Component {
         );
     }
 }
+
+Search.propTypes = {  
+  updateSearch: React.PropTypes.func.isRequired,
+  submitSearch: React.PropTypes.func.isRequired,
+  currentSearch: React.PropTypes.string.isRequired
+};

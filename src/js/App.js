@@ -113,6 +113,7 @@ export default class App extends React.Component {
     }
     submitSearch(event){
         this.getWeather(this.state.currentSearch);
+        this.setState({currentSearch: ""});
     }
     
     render(){
