@@ -31,10 +31,10 @@ export default class App extends React.Component {
             //check when the weather was last recieved if time is greater than X
             //get it again
             if(this.isCacheFresh(previousSearches[lastCityKey])){
-                console.log("local data is fresh");
+                //console.log("local data is fresh");
                 this.setState({currentCity: previousSearches[lastCityKey] });
             }else{
-                console.log("local data is stale");
+                //console.log("local data is stale");
                 this.getWeather(lastCityKey);
             }
         }
@@ -56,8 +56,9 @@ export default class App extends React.Component {
     }
     checkTime(time){
         const ONE_HOUR = 60 * 60 * 1000;
+        const FIVE_MINS = 5 * 60 * 1000;
         let delta = Date.now() - time;
-        return delta < ONE_HOUR;
+        return delta < FIVE_MINS;
     }
     
     getWeather(cityQuery){
@@ -65,14 +66,14 @@ export default class App extends React.Component {
         let cachedSearch = this.state.previousSearches[cityQuery];
         //if there is no previous search for a city or the search is stale
         if(this.isCacheFresh(cachedSearch)){ //less than one hour since last search
-            console.log("already have", this.state.previousSearches, cityQuery);
+            //console.log("already have", this.state.previousSearches, cityQuery);
             let previousSearches = Object.assign({}, this.state.previousSearches);
             previousSearches.lastCityKey = cityQuery;
             this.setState({currentCity: this.state.previousSearches[cityQuery], previousSearches });
             localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
         }
         else{
-            console.log("new search");
+            //console.log("new search");
             var url = `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=imperial&APPID=${API_KEY}`;
     	    Request.get(url).then((success, failure) => {
     	        console.log(success);
